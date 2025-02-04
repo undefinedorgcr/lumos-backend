@@ -1,22 +1,22 @@
-# Lumos-Backend
+# Lumos-Backend 🚀
 
-## Overview
+## Overview 🌐
 **Lumos-Backend** is the server-side component of the Lumos project, designed to manage user data, handle API requests, and interact with a MongoDB database. It provides endpoints to manage user accounts, including creating, updating, retrieving, and deleting user data.
 
 The backend is built using **Next.js API routes**, leveraging MongoDB as the database to store user information. It follows best practices for RESTful APIs and is designed for ease of use and scalability.
 
-## Features
-- **User Management**: Create, read, update, and delete user profiles.
-- **MongoDB Integration**: Seamlessly integrates with MongoDB to store and manage user data.
-- **API Endpoints**: RESTful API design for various user actions.
-- **Error Handling**: Comprehensive error handling for API requests.
+## Features ✨
+- **User Management**: Create, read, update, and delete user profiles. 🧑‍💻
+- **MongoDB Integration**: Seamlessly integrates with MongoDB to store and manage user data. 🗄️
+- **API Endpoints**: RESTful API design for various user actions. 🔗
+- **Error Handling**: Comprehensive error handling for API requests. ⚠️
 
-## Technologies Used
-- **Next.js**: Framework used for building the API routes and handling server-side logic.
-- **MongoDB**: NoSQL database used to store user data.
-- **TypeScript**: Provides static typing for better development experience and type safety.
+## Technologies Used 🛠️
+- **Next.js**: Framework used for building the API routes and handling server-side logic. 🌍
+- **MongoDB**: NoSQL database used to store user data. 📚
+- **TypeScript**: Provides static typing for better development experience and type safety. 📝
 
-## Installation
+## Installation ⚙️
 
 1. Clone the repository:
 
