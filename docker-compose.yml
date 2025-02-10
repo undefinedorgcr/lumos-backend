@@ -1,0 +1,10 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: lumos-backend
+    environment:
+      MONGO_INITDB_DATABASE: lumos
+    volumes:
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    ports:
+      - "27017:27017"
