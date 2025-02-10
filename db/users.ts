@@ -44,16 +44,42 @@ const getUserById = async (id: string): Promise<any | null> => {
 };
 
 /**
- * Creates a new user in the database.
+ * Fetches a user by their uId.
+ * @param {string} uId - The uId of the user.
+ * @returns {Promise<any | null>} The user document if found, otherwise null.
+ */
+const getUserByUId = async (uId: string): Promise<any | null> => {
+    try {
+        const user = await (await getDB()).findOne({ uId: uId });
+        return user;
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+};
+
+/**
+ * Creates a new user in the database if the email is not already registered.
  * @param {any} user - The user data to be inserted.
  * @returns {Promise<string | null>} The inserted user ID if successful, otherwise null.
  */
 const createUser = async (user: any): Promise<string | null> => {
     try {
-        const result = await (await getDB()).insertOne(user);
+        const db = await getDB();
+        
+        // Check if a user with the same uId already exists
+        const existingUser = await db.findOne({ uId: user.uId });
+
+        if (existingUser) {
+            console.log("User with this uId already exists.");
+            return existingUser._id.toString(); // Prevent duplicate users
+        }
+
+        // Insert new user if uId is unique
+        const result = await db.insertOne(user);
         return result.insertedId.toString();  // Ensure it's returned as a string.
     } catch (e) {
-        console.error(e);
+        console.error("Database error:", e);
         return null;
     }
 };
@@ -100,4 +126,4 @@ const deleteUser = async (id: string): Promise<boolean> => {
     }
 };
 
-export default { getAllUsers, getUserById, createUser, updateUser, deleteUser };
+export default { getAllUsers, getUserById, createUser, updateUser, deleteUser,getUserByUId };

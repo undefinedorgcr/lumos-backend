@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbUsers from '../../db/users';
+import Cors from 'cors';
 
 type User = { 
   _id?: string;
@@ -15,6 +16,28 @@ type ResponseData = {
   message?: string;
 };
 
+
+
+// Initialize CORS middleware
+const cors = Cors({
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+});
+
+// Middleware helper function to run CORS
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
+    return new Promise((resolve, reject) => {
+        fn(req, res, (result: any) => {
+            if (result instanceof Error) {
+                return reject(result);
+            }
+            return resolve(result);
+        });
+    });
+}
+
+
 /**
  * Handles user-related requests (GET, POST, PUT, DELETE) for the user API.
  * @param {NextApiRequest} req - The HTTP request object.
@@ -23,9 +46,22 @@ type ResponseData = {
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>): Promise<void> {
     try {
+        await runMiddleware(req, res, cors); // Apply CORS middleware
         // Handle GET request to fetch all users
         if (req.method === 'GET') {
             try {
+                const { uId } = req.query; // Extract uId from query params
+
+                if (typeof uId === 'string') {
+                    // Fetch a single user by uId
+                    const user = await dbUsers.getUserByUId(uId);
+
+                    if (!user) {
+                        return res.status(404).json({ message: "User not found" });
+                    }
+
+                    return res.status(200).json({ users: [user] });
+                } else {
                 const users = await dbUsers.getAllUsers();
                 
                 // Sanitizing the user data to match the expected format
@@ -37,8 +73,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     remaining_requests,
                     uId
                 }));
+                
     
                 res.status(200).json({ users: sanitizedUsers });
+            }
             } catch (error) {
                 console.error("Error fetching users:", error);
                 res.status(500).json({ users: [] });
