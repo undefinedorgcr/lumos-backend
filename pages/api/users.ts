@@ -1,22 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import dbUsers from '../../db/users';
 import Cors from 'cors';
-
-type User = { 
-  _id?: string;
-  email: string;
-  fav_pools?: string[];
-  user_type?: string;
-  remaining_requests?: number;
-  uId: string;
-};
-
-type ResponseData = {
-  users?: User[];
-  message?: string;
-};
-
-
+import userService from '../../services/userService';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { ResponseData } from '../../types/usersApiResponseData';
 
 // Initialize CORS middleware
 const cors = Cors({
@@ -37,7 +22,6 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
     });
 }
 
-
 /**
  * Handles user-related requests (GET, POST, PUT, DELETE) for the user API.
  * @param {NextApiRequest} req - The HTTP request object.
@@ -47,101 +31,47 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>): Promise<void> {
     try {
         await runMiddleware(req, res, cors); // Apply CORS middleware
+        
         // Handle GET request to fetch all users
         if (req.method === 'GET') {
-            try {
-                const { uId } = req.query; // Extract uId from query params
-
-                if (typeof uId === 'string') {
-                    // Fetch a single user by uId
-                    const user = await dbUsers.getUserByUId(uId);
-
-                    if (!user) {
-                        return res.status(404).json({ message: "User not found" });
-                    }
-
-                    return res.status(200).json({ users: [user] });
-                } else {
-                const users = await dbUsers.getAllUsers();
-                
-                // Sanitizing the user data to match the expected format
-                const sanitizedUsers = users.map(({ _id, email, fav_pools, user_type, remaining_requests, uId }: any) => ({
-                    _id,
-                    email,
-                    fav_pools,
-                    user_type,
-                    remaining_requests,
-                    uId
-                }));
-                
-    
-                res.status(200).json({ users: sanitizedUsers });
+            const { uId } = req.query; // Extract uId from query params
+            if (typeof uId === 'string') {
+                return await userService.handleGetUserByUid(req, res);
+            } else {
+                return await userService.handleGetUsers(res);
             }
-            } catch (error) {
-                console.error("Error fetching users:", error);
-                res.status(500).json({ users: [] });
-            }
-        } 
-        
+        }
+
         // Handle POST request to create a new user
         else if (req.method === 'POST') {
-            const { email, uId, fav_pools = [], user_type, remaining_requests } = req.body;
+            return await userService.handleCreateUser(req, res);
+        }
 
-            if (!email || !uId) {
-                return res.status(400).json({ message: "Missing required fields (email, uId)" });
-            }
-
-            const newUserId = await dbUsers.createUser({ email, uId, fav_pools, user_type, remaining_requests });
-            
-            if (!newUserId) {
-                return res.status(500).json({ message: "Error creating user" });
-            }
-            return res.status(201).json({ message: "User created successfully", users: [{ _id: String(newUserId), email, uId }] });
-        } 
-        
         // Handle PUT request to update an existing user
         else if (req.method === 'PUT') {
-            const { _id, email, uId, fav_pools, user_type, remaining_requests } = req.body;
-
-            // Validate required fields
-            if (!_id || !email || !uId) {
-                return res.status(400).json({ message: "Missing required fields (_id, email, uId)" });
+            // Check if the request is to update the user's plan
+            if (req.body.newUserType) {
+                return await userService.handleUpdateUserType(req, res);  // Call the new method for updating the plan
+            } else {
+                return await userService.handleUpdateUser(req, res);  // Regular update (e.g., user info update)
             }
+        }
 
-            // Update the user
-            const updatedUser = await dbUsers.updateUser({ _id, email, uId, fav_pools, user_type, remaining_requests });
-
-            if (!updatedUser) {
-                return res.status(404).json({ message: "User not found or update failed" });
-            }
-
-            return res.status(200).json({ message: "User updated successfully", users: [updatedUser] });
-        } 
-        
         // Handle DELETE request to delete a user
         else if (req.method === 'DELETE') {
-            const { _id } = req.body;
-
-            if (!_id) {
-                return res.status(400).json({ message: "Missing required field (_id)" });
-            }
-
-            // Delete the user from the database
-            const deletedUser = await dbUsers.deleteUser(_id);
-
-            if (!deletedUser) {
-                return res.status(404).json({ message: "User not found" });
-            }
-
-            return res.status(200).json({ message: "User deleted successfully" });
+            return await userService.handleDeleteUser(req, res);
         }
-        
+
         // Return error if the method is not allowed
         else {
-            res.status(405).json({ message: "Method not allowed" });
+            res.status(405).json({
+                message: "Method not allowed"
+            });
         }
     } catch (error) {
         console.error("API Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({
+            message: "Internal server error"
+        });
     }
 }
