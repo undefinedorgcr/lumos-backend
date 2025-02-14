@@ -39,7 +39,12 @@ const handleGetUserByUid = async (req: NextApiRequest, res: NextApiResponse<Resp
     try {
         const { uId } = req.query; // Extract uId from query params
         // Fetch a single user by uId
-        const user = await dbUsers.getUserByUId(uId);
+        if(uId == null) {
+            return res.status(404).json({
+                message: "missing user id"
+            });
+        }
+        const user = await dbUsers.getUserByUId(Array.isArray(uId) ? uId[0] : uId);
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
@@ -175,7 +180,7 @@ const handleDeleteUser = async (req: NextApiRequest, res: NextApiResponse<Respon
  */
 export const handleUpdateUserType = async (req: NextApiRequest, res: NextApiResponse) => {
     const { uId, newUserType } = req.body; // Expecting body to contain uId and newPlan
-
+    console.log(newUserType);
     if (!uId || !isValidUserType(newUserType)) {
         return res.status(400).json({
             message: "Missing or invalid required fields (uId, user_type)"
