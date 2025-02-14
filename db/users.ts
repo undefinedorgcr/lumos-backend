@@ -8,7 +8,7 @@ import { LumosPlan, getLumosPlanFromString, getPlanDetails, isValidUserType } fr
  * @returns {Promise<Collection>} The 'users' collection from the database.
  */
 const getDB = async () => {
-    const client = await clientPromise;
+    const client = await clientPromise.connect();
     return client.db("lumos").collection("users");
 };
 
