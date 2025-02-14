@@ -21,14 +21,14 @@ interface PlanDetails {
 const PlanDetailsMap: Record<LumosPlan, PlanDetails> = {
     [LumosPlan.Free]: {
         expirationDays: 0, // No expiration
-        dailyRequests: 100,
+        dailyRequests: 10,
     },
     [LumosPlan.Pro]: {
         expirationDays: 30,
-        dailyRequests: 500,
+        dailyRequests: 50,
     },
     [LumosPlan.Degen]: {
-        expirationDays: 45,
+        expirationDays: 30,
         dailyRequests: Infinity,
     },
 };
