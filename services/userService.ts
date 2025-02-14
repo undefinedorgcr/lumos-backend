@@ -11,13 +11,14 @@ const handleGetUsers = async (res: NextApiResponse<ResponseData>) => {
         const users = await dbUsers.getAllUsers();
 
         // Sanitize the user data
-        const sanitizedUsers = users.map(({ _id, email, fav_pools, user_type, remaining_requests, uId }: any) => ({
+        const sanitizedUsers = users.map(({ _id, email, fav_pools, user_type, remaining_requests, uId ,plan_exp_date}: any) => ({
             _id,
             email,
             fav_pools,
             user_type,
             remaining_requests,
             uId,
+            plan_exp_date,
         }));
 
         return res.status(200).json({
