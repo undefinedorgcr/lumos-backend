@@ -1,3 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
+
+
 /**
  * Calculates a future date by adding a specified number of days to the current date.
  *
@@ -12,4 +15,12 @@ export const getFutureDate = (daysToAdd: number): Date => {
     const today = new Date();
     today.setDate(today.getDate() + daysToAdd);
     return today;
+};
+
+/**
+ * Generates a unique identifier (UUID v4).
+ * @returns {string} A unique ID string.
+ */
+export const generateId = (): string => {
+    return uuidv4();
 };
