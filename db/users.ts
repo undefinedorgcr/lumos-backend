@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "../lib/mongodb";
-import { getFutureDate , generateId} from "../utils/utils";
+import { getFutureDate } from "../utils/utils";
 import { LumosPlan, getLumosPlanFromString, getPlanDetails, isValidUserType } from "../enums/plans";
 
 const getDB = async () => {
@@ -142,7 +142,7 @@ const updateUserType = async (uId: string, newUserType: string): Promise<Object 
     }
 };
 
-export const updateEkuboFavPools = async (uId: string, newEkuboFavPool: { token0: string; token1: string; fee: number; tickSpacing: number ,uId: string }): Promise<Object | null> => {
+export const updateEkuboFavPools = async (uId: string, newEkuboFavPool: { token0: string; token1: string; fee: number; tickSpacing: number }): Promise<Object | null> => {
     try {
         const db = await getDB();
         const userDb = await db.findOne({ uId });
@@ -152,11 +152,7 @@ export const updateEkuboFavPools = async (uId: string, newEkuboFavPool: { token0
             return null;
         }
 
-        newEkuboFavPool.uId = generateId();
-
-        const existingPools: Array<{ token0: string; token1: string; fee: number; tickSpacing: number ,uId: string}> = userDb.ekubo_fav_pools || [];
-
-
+        const existingPools: Array<{ token0: string; token1: string; fee: number; tickSpacing: number}> = userDb.ekubo_fav_pools || [];
 
         const isDuplicate = existingPools.some(
             pool =>
