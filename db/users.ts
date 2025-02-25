@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "../lib/mongodb";
 import { getFutureDate } from "../utils/utils";
-import { LumosPlan, getLumosPlanFromString, getPlanDetails, isValidUserType } from "../enums/plans";
+import { LumosPlan, getLumosPlanFromString, getPlanDetails } from "../enums/plans";
 
 const getDB = async () => {
     const client = await clientPromise.connect();
@@ -142,7 +142,7 @@ const updateUserType = async (uId: string, newUserType: string): Promise<Object 
     }
 };
 
-export const updateEkuboFavPools = async (uId: string, newEkuboFavPool: { token0: string; token1: string; fee: number; tickSpacing: number }): Promise<Object | null> => {
+const updateEkuboFavPools = async (uId: string, newEkuboFavPool: { token0: string; token1: string; fee: number; tickSpacing: number }): Promise<Object | null> => {
     try {
         const db = await getDB();
         const userDb = await db.findOne({ uId });
@@ -183,6 +183,46 @@ export const updateEkuboFavPools = async (uId: string, newEkuboFavPool: { token0
     }
 };
 
+const removeEkuboFavPool = async (
+    uId: string,
+    pool: { token0: string; token1: string; fee: number; tickSpacing: number }
+  ): Promise<Object | null> => {
+    try {
+      const db = await getDB();
+      const userDb = await db.findOne({ uId });
+  
+      if (!userDb) {
+        console.error("User not found.");
+        return null;
+      }
+  
+      const existingPools: Array<{ token0: string; token1: string; fee: number; tickSpacing: number }> =
+        userDb.ekubo_fav_pools || [];
+  
+      const updatedPools = existingPools.filter(
+        (p) =>
+          !(p.token0 === pool.token0 && p.token1 === pool.token1 && p.fee === pool.fee && p.tickSpacing === pool.tickSpacing)
+      );
+  
+      if (existingPools.length === updatedPools.length) {
+        console.log("Pool not found in favorites.");
+        return null;
+      }
+
+      const result = await db.updateOne({ uId }, { $set: { ekubo_fav_pools: updatedPools } });
+  
+      if (result.matchedCount === 0) {
+        console.error("User not found.");
+        return null;
+      }
+  
+      return { uId, ekubo_fav_pools: updatedPools };
+    } catch (error) {
+      console.error("Error removing Ekubo favorite pool:", error);
+      return null;
+    }
+};
+
 export default { 
     getAllUsers, 
     getUserById, 
@@ -191,5 +231,6 @@ export default {
     deleteUser, 
     getUserByUId, 
     updateUserType,
-    updateEkuboFavPools
+    updateEkuboFavPools,
+    removeEkuboFavPool
 };
