@@ -1,36 +1,8 @@
-import Cors from 'cors';
 import userService from '../../services/userService';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ResponseData } from '../../types/usersApiResponseData';
+import { verifyAuth , runMiddleware, cors } from '../../utils/authUtils';
 
-const cors = Cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-});
-
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
-    return new Promise((resolve, reject) => {
-        fn(req, res, (result: any) => {
-            if (result instanceof Error) return reject(result);
-            return resolve(result);
-        });
-    });
-}
-
-function verifyAuth(req: NextApiRequest): boolean {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return false;
-    const token = authHeader.split(' ')[1];
-    return token === process.env.API_SECRET_TOKEN;
-}
-
-/**
- * Handles user-related requests (GET, POST, PUT, DELETE) for the user API.
- * @param {NextApiRequest} req - The HTTP request object.
- * @param {NextApiResponse<ResponseData>} res - The HTTP response object.
- * @returns {Promise<void>} - The response to the request.
- */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>): Promise<void> {
     try {
         await runMiddleware(req, res, cors); 
@@ -49,7 +21,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             return await userService.handleCreateUser(req, res);
         }
         else if (req.method === 'PUT') {
-            
             if (req.body.newUserType) {
                 return await userService.handleUpdateUserType(req, res);  
             }else if( req.body.protocol) {
@@ -59,7 +30,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             }
         }
         else if (req.method === 'DELETE') {
-            return await userService.handleDeleteUser(req, res);
+            if (req.body.pool) {
+                return await userService.handleDeleteFavPool(req, res);
+            } else {
+                return await userService.handleDeleteUser(req, res);
+            }
         }
         else {
             res.status(405).json({

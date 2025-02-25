@@ -3,11 +3,8 @@ import { isValidUserType } from "../enums/plans";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ResponseData } from "../types/usersApiResponseData";
 
-const EKUBO_PROTOCOL='EKUBO';
+const EKUBO_PROTOCOL = 'EKUBO';
 
-/**
- * Handles GET request to fetch all users.
- */
 const handleGetUsers = async (res: NextApiResponse<ResponseData>) => {
     try {
         const users = await dbUsers.getAllUsers();
@@ -34,9 +31,6 @@ const handleGetUsers = async (res: NextApiResponse<ResponseData>) => {
     }
 };
 
-/**
- * Handles GET request to fetch a user by uId.
- */
 const handleGetUserByUid = async (req: NextApiRequest, res: NextApiResponse<ResponseData>) => {
     try {
         const { uId } = req.query; 
@@ -62,9 +56,6 @@ const handleGetUserByUid = async (req: NextApiRequest, res: NextApiResponse<Resp
     }
 };
 
-/**
- * Handles POST request to create a new user.
- */
 const handleCreateUser = async (req: NextApiRequest, res: NextApiResponse<ResponseData>) => {
     const { email, uId, ekubo_fav_pools = [], user_type } = req.body;
 
@@ -104,9 +95,6 @@ const handleCreateUser = async (req: NextApiRequest, res: NextApiResponse<Respon
     }
 };
 
-/**
- * Handles PUT request to update an existing user.
- */
 const handleUpdateUser = async (req: NextApiRequest, res: NextApiResponse<ResponseData>) => {
     const { _id, email, uId, ekubo_fav_pools, user_type, remaining_requests } = req.body;
 
@@ -144,9 +132,6 @@ const handleUpdateUser = async (req: NextApiRequest, res: NextApiResponse<Respon
     }
 };
 
-/**
- * Handles DELETE request to delete a user.
- */
 const handleDeleteUser = async (req: NextApiRequest, res: NextApiResponse<ResponseData>) => {
     const { _id } = req.body;
 
@@ -176,10 +161,7 @@ const handleDeleteUser = async (req: NextApiRequest, res: NextApiResponse<Respon
     }
 };
 
-/**
- * Handles updating the user's plan.
- */
-export const handleUpdateUserType = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleUpdateUserType = async (req: NextApiRequest, res: NextApiResponse) => {
     const { uId, newUserType } = req.body;
     if (!uId || !isValidUserType(newUserType)) {
         return res.status(400).json({
@@ -207,8 +189,8 @@ export const handleUpdateUserType = async (req: NextApiRequest, res: NextApiResp
     }
 };
 
+const handleUpdateFavPools = async (req: NextApiRequest, res: NextApiResponse) => {
 
-export const handleUpdateFavPools = async (req: NextApiRequest, res: NextApiResponse) => {
     const { uId, newFavPool, protocol } = req.body;
 
     if (!uId || !newFavPool || !protocol) {
@@ -216,13 +198,11 @@ export const handleUpdateFavPools = async (req: NextApiRequest, res: NextApiResp
             message: "Missing or invalid required fields (uId, newFavPool, protocol)"
         });
     }
-
     if(!newFavPool.token0 || !newFavPool.token1 || !newFavPool.fee || !newFavPool.tickSpacing){
         return res.status(400).json({
             message: "Missing or invalid required fields (newFavPool.token0, newFavPool.token1, newFavPool.fee,newFavPool.tickSpacing)"
         });
     }
-
     if(protocol.toUpperCase() === EKUBO_PROTOCOL){
         return handleUpdateEkuboFavPools(uId,newFavPool,res);
 
@@ -232,11 +212,7 @@ export const handleUpdateFavPools = async (req: NextApiRequest, res: NextApiResp
     }
 }
 
-
-/**
- * Handles updating the ekubo fav pools
- */
-export const handleUpdateEkuboFavPools = async (uId, newEkuboFavPool,res: NextApiResponse) => {
+const handleUpdateEkuboFavPools = async (uId, newEkuboFavPool,res: NextApiResponse) => {
     try {
         const updatedUser = await dbUsers.updateEkuboFavPools(uId, newEkuboFavPool);
         if (!updatedUser) {
@@ -255,6 +231,49 @@ export const handleUpdateEkuboFavPools = async (uId, newEkuboFavPool,res: NextAp
     }
 };
 
+const handleDeleteFavPool = async (req: NextApiRequest, res: NextApiResponse) => {
+    const { uId, pool, protocol } = req.body;
+
+    if (!uId || !pool || !protocol) {
+        return res.status(400).json({
+            message: "Missing or invalid required fields (uId, pool, protocol)"
+        });
+    }
+
+    if(!pool.token0 || !pool.token1 || !pool.fee || !pool.tickSpacing){
+        return res.status(400).json({
+            message: "Missing or invalid required fields (pool.token0, pool.token1, pool.fee, pool.tickSpacing)"
+        });
+    }
+
+    if(protocol.toUpperCase() === EKUBO_PROTOCOL){
+        return handleDeleteEkuboFavPools(uId,pool,res);
+
+    }else{
+        console.error("Invalid protocol:", protocol);
+        return res.status(400).json({ message: 'Invalid protocol' });
+    }
+};
+
+const handleDeleteEkuboFavPools = async (uId, pool,res: NextApiResponse) => {
+    try {
+        const updatedUser = await dbUsers.removeEkuboFavPool(uId, pool);
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found or update failed"
+            });
+        }
+        return res.status(200).json({
+            message: "User ekubo fav pools deleted successfully",
+            users: [updatedUser]
+        });
+
+    } catch (error) {
+        console.error("Error deleting ekubo fav pool:", error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 export default {
     handleGetUsers,
     handleGetUserByUid,
@@ -263,5 +282,6 @@ export default {
     handleDeleteUser,
     handleUpdateUserType,
     handleUpdateEkuboFavPools,
-    handleUpdateFavPools
+    handleUpdateFavPools,
+    handleDeleteFavPool
 };
