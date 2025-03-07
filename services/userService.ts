@@ -198,9 +198,9 @@ const handleUpdateFavPools = async (req: NextApiRequest, res: NextApiResponse) =
             message: "Missing or invalid required fields (uId, newFavPool, protocol)"
         });
     }
-    if(!newFavPool.token0 || !newFavPool.token1 || !newFavPool.fee || !newFavPool.tickSpacing || !newFavPool.token0LogoUrl || !newFavPool.token1LogoUrl){
+    if(!newFavPool.token0 || !newFavPool.token1 || !newFavPool.totalFees || !newFavPool.totalTvl || !newFavPool.token0LogoUrl || !newFavPool.token1LogoUrl || !newFavPool.fee || !newFavPool.tickSpacing ){
         return res.status(400).json({
-            message: "Missing or invalid required fields (newFavPool.token0, newFavPool.token1, newFavPool.fee,newFavPool.tickSpacing,newFavPool.token0LogoUrl,newFavPool.token1LogoUrl)"
+            message: "Missing or invalid required fields (newFavPool.token0, newFavPool.token1, newFavPool.totalFees,newFavPool.totalTvl ,newFavPool.token0LogoUrl,newFavPool.token1LogoUrl,newFavPool.fee,newFavPool.tickSpacing)"
         });
     }
     if(protocol.toUpperCase() === EKUBO_PROTOCOL){
@@ -212,7 +212,7 @@ const handleUpdateFavPools = async (req: NextApiRequest, res: NextApiResponse) =
     }
 }
 
-const handleUpdateEkuboFavPools = async (uId, newEkuboFavPool,res: NextApiResponse) => {
+const handleUpdateEkuboFavPools = async (uId :string , newEkuboFavPool:any ,res: NextApiResponse) => {
     try {
         const updatedUser = await dbUsers.updateEkuboFavPools(uId, newEkuboFavPool);
         if (!updatedUser) {
