@@ -198,9 +198,9 @@ const handleUpdateFavPools = async (req: NextApiRequest, res: NextApiResponse) =
             message: "Missing or invalid required fields (uId, newFavPool, protocol)"
         });
     }
-    if(!newFavPool.token0 || !newFavPool.token1 || !newFavPool.totalFees || !newFavPool.totalTvl || !newFavPool.token0LogoUrl || !newFavPool.token1LogoUrl || !newFavPool.fee || !newFavPool.tickSpacing ){
+    if(!newFavPool.token0 || !newFavPool.token1 || !newFavPool.totalFees || !newFavPool.totalTvl  || !newFavPool.fee || !newFavPool.tickSpacing ){
         return res.status(400).json({
-            message: "Missing or invalid required fields (newFavPool.token0, newFavPool.token1, newFavPool.totalFees,newFavPool.totalTvl ,newFavPool.token0LogoUrl,newFavPool.token1LogoUrl,newFavPool.fee,newFavPool.tickSpacing)"
+            message: "Missing or invalid required fields (newFavPool.token0, newFavPool.token1, newFavPool.totalFees,newFavPool.totalTvl,newFavPool.fee,newFavPool.tickSpacing)"
         });
     }
     if(protocol.toUpperCase() === EKUBO_PROTOCOL){

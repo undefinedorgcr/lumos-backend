@@ -142,9 +142,7 @@ const updateUserType = async (uId: string, newUserType: string): Promise<Object 
     }
 };
 
-const updateEkuboFavPools = async (uId: string, newEkuboFavPool: {
-    token1LogoUrl: string;
-    token0LogoUrl: string; token0: string; token1: string; totalFees: number; totalTvl: number ; fee: number ; tickSpacing: number
+const updateEkuboFavPools = async (uId: string, newEkuboFavPool: { token0: string; token1: string; totalFees: number; totalTvl: number ; fee: number ; tickSpacing: number
 }): Promise<Object | null> => {
     try {
         const db = await getDB();
@@ -155,7 +153,7 @@ const updateEkuboFavPools = async (uId: string, newEkuboFavPool: {
             return null;
         }
 
-        const existingPools: Array<{ token0: string; token1: string; totalFees: number; totalTvl: number; token0LogoUrl: string; token1LogoUrl: string; fee: number; tickSpacing:number}> = userDb.ekubo_fav_pools || [];
+        const existingPools: Array<{ token0: string; token1: string; totalFees: number; totalTvl: number; fee: number; tickSpacing:number}> = userDb.ekubo_fav_pools || [];
 
         const isDuplicate = existingPools.some(
             pool =>
@@ -163,8 +161,6 @@ const updateEkuboFavPools = async (uId: string, newEkuboFavPool: {
                 pool.token1 === newEkuboFavPool.token1 &&
                 pool.totalFees === newEkuboFavPool.totalFees &&
                 pool.totalTvl === newEkuboFavPool.totalTvl &&
-                pool.token0LogoUrl === newEkuboFavPool.token0LogoUrl &&
-                pool.token1LogoUrl === newEkuboFavPool.token1LogoUrl &&
                 pool.tickSpacing === newEkuboFavPool.tickSpacing
         );
 
