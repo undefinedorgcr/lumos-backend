@@ -19,9 +19,11 @@ const getAllPositions = async (): Promise<any[]> => {
 	}
 };
 
-const getPositionByUId = async (uId: string): Promise<any | null> => {
+const getPositionById = async (id: string): Promise<any | null> => {
 	try {
-		const position = await (await getDB()).findOne({ uId });
+		const position = await (
+			await getDB()
+		).findOne({ _id: new ObjectId(id) });
 		return position;
 	} catch (e) {
 		console.error(e);
@@ -76,7 +78,7 @@ const deletePosition = async (id: string): Promise<boolean> => {
 
 export default {
 	getAllPositions,
-	getPositionByUId,
+	getPositionById,
 	createPosition,
 	updatePosition,
 	deletePosition,

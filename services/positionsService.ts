@@ -12,16 +12,16 @@ const handleGetPositions = async (res: NextApiResponse) => {
 	}
 };
 
-const handleGetPositionByUId = async (
+const handleGetPositionById = async (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) => {
 	try {
-		const { uId } = req.query;
-		if (!uId) {
+		const { _id } = req.query;
+		if (!_id) {
 			return res.status(400).json({ message: 'Missing position ID' });
 		}
-		const position = await dbPositions.getPositionByUId(uId as string);
+		const position = await dbPositions.getPositionById(_id as string);
 		if (!position) {
 			return res.status(404).json({ message: 'Position not found' });
 		}
@@ -36,18 +36,16 @@ const handleCreatePosition = async (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) => {
-	const { uId, token, total_value, protocol } = req.body;
+	const { token, total_value, protocol } = req.body;
 
-	if (!uId || !token || !total_value || !protocol) {
+	if (!token || !total_value || !protocol) {
 		return res.status(400).json({
 			message:
-				'Missing or invalid required fields (uId, token, total_value , protocol )',
+				'Missing or invalid required fields ( token, total_value , protocol )',
 		});
 	}
-
 	try {
 		const newPositionId = await dbPositions.createPosition({
-			uId,
 			token,
 			total_value,
 			protocol,
@@ -124,7 +122,7 @@ const handleDeletePosition = async (
 
 export default {
 	handleGetPositions,
-	handleGetPositionByUId,
+	handleGetPositionById,
 	handleCreatePosition,
 	handleUpdatePosition,
 	handleDeletePosition,

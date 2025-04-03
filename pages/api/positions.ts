@@ -13,9 +13,9 @@ export default async function handler(
 			return res.status(401).json({ message: 'Unauthorized' });
 		}
 		if (req.method === 'GET') {
-			const { uId } = req.query;
-			if (typeof uId === 'string') {
-				return await positionsService.handleGetPositionByUId(req, res);
+			const { _id } = req.query;
+			if (typeof _id === 'string') {
+				return await positionsService.handleGetPositionById(req, res);
 			} else {
 				return await positionsService.handleGetPositions(res);
 			}
