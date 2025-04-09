@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { ResponseData } from '../types/usersApiResponseData';
 
 const EKUBO_PROTOCOL = 'EKUBO';
+const VESU_PROTOCOL = 'VESU';
 
 const handleGetUsers = async (res: NextApiResponse<ResponseData>) => {
 	try {
@@ -231,22 +232,57 @@ const handleUpdateFavPools = async (
 				'Missing or invalid required fields (uId, newFavPool, protocol)',
 		});
 	}
-	if (
-		!newFavPool.token0 ||
-		!newFavPool.token1 ||
-		!newFavPool.fee ||
-		!newFavPool.tickSpacing
-	) {
-		return res.status(400).json({
-			message:
-				'Missing or invalid required fields (newFavPool.token0, newFavPool.token1, newFavPool.fee,newFavPool.tickSpacing)',
-		});
+
+	if (protocol.toUpperCase() === VESU_PROTOCOL) {
+		if (!newFavPool.name) {
+			return res.status(400).json({
+				message:
+					'Missing or invalid required fields ( newFavPool.name )',
+			});
+		}
+		return handleUpdateVesuFavPools(uId, newFavPool, res);
 	}
 	if (protocol.toUpperCase() === EKUBO_PROTOCOL) {
+		if (
+			!newFavPool.token0 ||
+			!newFavPool.token1 ||
+			!newFavPool.fee ||
+			!newFavPool.tickSpacing
+		) {
+			return res.status(400).json({
+				message:
+					'Missing or invalid required fields (newFavPool.token0, newFavPool.token1, newFavPool.fee,newFavPool.tickSpacing)',
+			});
+		}
 		return handleUpdateEkuboFavPools(uId, newFavPool, res);
 	} else {
 		console.error('Invalid protocol:', protocol);
 		return res.status(400).json({ message: 'Invalid protocol' });
+	}
+};
+
+const handleUpdateVesuFavPools = async (
+	uId: string,
+	newVesuFavPool,
+	res: NextApiResponse
+) => {
+	try {
+		const updatedUser = await dbUsers.updateVesuFavPools(
+			uId,
+			newVesuFavPool
+		);
+		if (!updatedUser) {
+			return res.status(404).json({
+				message: 'User not found or update failed',
+			});
+		}
+		return res.status(200).json({
+			message: 'User vesu fav pools updated successfully',
+			users: [updatedUser],
+		});
+	} catch (error) {
+		console.error('Error updating user type:', error);
+		return res.status(500).json({ message: 'Internal server error' });
 	}
 };
 
@@ -287,14 +323,23 @@ const handleDeleteFavPool = async (
 		});
 	}
 
-	if (!pool.token0 || !pool.token1 || !pool.fee || !pool.tickSpacing) {
-		return res.status(400).json({
-			message:
-				'Missing or invalid required fields (pool.token0, pool.token1, pool.fee, pool.tickSpacing)',
-		});
+	if (protocol.toUpperCase() === VESU_PROTOCOL) {
+		if (!pool.name) {
+			return res.status(400).json({
+				message:
+					'Missing or invalid required fields ( newFavPool.name )',
+			});
+		}
+		return handleDeleteVesuFavPools(uId, pool, res);
 	}
 
 	if (protocol.toUpperCase() === EKUBO_PROTOCOL) {
+		if (!pool.token0 || !pool.token1 || !pool.fee || !pool.tickSpacing) {
+			return res.status(400).json({
+				message:
+					'Missing or invalid required fields (pool.token0, pool.token1, pool.fee, pool.tickSpacing)',
+			});
+		}
 		return handleDeleteEkuboFavPools(uId, pool, res);
 	} else {
 		console.error('Invalid protocol:', protocol);
@@ -316,6 +361,24 @@ const handleDeleteEkuboFavPools = async (uId, pool, res: NextApiResponse) => {
 		});
 	} catch (error) {
 		console.error('Error deleting ekubo fav pool:', error);
+		return res.status(500).json({ message: 'Internal server error' });
+	}
+};
+
+const handleDeleteVesuFavPools = async (uId, pool, res: NextApiResponse) => {
+	try {
+		const updatedUser = await dbUsers.removeVesuFavPool(uId, pool);
+		if (!updatedUser) {
+			return res.status(404).json({
+				message: 'User not found or update failed',
+			});
+		}
+		return res.status(200).json({
+			message: 'User vesu fav pools deleted successfully',
+			users: [updatedUser],
+		});
+	} catch (error) {
+		console.error('Error deleting vesu fav pool:', error);
 		return res.status(500).json({ message: 'Internal server error' });
 	}
 };

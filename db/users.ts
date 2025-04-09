@@ -262,6 +262,96 @@ const removeEkuboFavPool = async (
 	}
 };
 
+const updateVesuFavPools = async (
+	uId: string,
+	newVesuFavPool: {
+		name: string;
+	}
+): Promise<Object | null> => {
+	try {
+		const db = await getDB();
+		const userDb = await db.findOne({ uId });
+
+		if (!userDb) {
+			console.error('User not found.');
+			return null;
+		}
+
+		const existingPools: Array<{
+			name: string;
+		}> = userDb.vesu_fav_pools || [];
+
+		const isDuplicate = existingPools.some(
+			(pool) => pool.name === newVesuFavPool.name
+		);
+
+		if (isDuplicate) {
+			console.log('Pool already exists in favorites.');
+			return { uId, vesu_fav_pools: existingPools };
+		}
+
+		const updatedPools = [...existingPools, newVesuFavPool];
+
+		const result = await db.updateOne(
+			{ uId },
+			{ $set: { vesu_fav_pools: updatedPools } }
+		);
+
+		if (result.matchedCount === 0) {
+			console.error('User not found.');
+			return null;
+		}
+
+		return { uId, vesu_fav_pools: updatedPools };
+	} catch (error) {
+		console.error('Error updating vesu fav pools:', error);
+		return null;
+	}
+};
+
+const removeVesuFavPool = async (
+	uId: string,
+	pool: { name: string }
+): Promise<Object | null> => {
+	try {
+		const db = await getDB();
+		const userDb = await db.findOne({ uId });
+
+		if (!userDb) {
+			console.error('User not found.');
+			return null;
+		}
+
+		const existingPools: Array<{
+			name: string;
+		}> = userDb.vesu_fav_pools || [];
+
+		const updatedPools = existingPools.filter(
+			(p) => !(p.name === pool.name)
+		);
+
+		if (existingPools.length === updatedPools.length) {
+			console.log('Pool not found in favorites.');
+			return null;
+		}
+
+		const result = await db.updateOne(
+			{ uId },
+			{ $set: { vesu_fav_pools: updatedPools } }
+		);
+
+		if (result.matchedCount === 0) {
+			console.error('User not found.');
+			return null;
+		}
+
+		return { uId, vesu_fav_pools: updatedPools };
+	} catch (error) {
+		console.error('Error removing Vesu favorite pool:', error);
+		return null;
+	}
+};
+
 export default {
 	getAllUsers,
 	getUserById,
@@ -272,4 +362,6 @@ export default {
 	updateUserType,
 	updateEkuboFavPools,
 	removeEkuboFavPool,
+	updateVesuFavPools,
+	removeVesuFavPool,
 };
